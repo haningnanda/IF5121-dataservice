@@ -31,30 +31,30 @@ class DataDatabase():
         {
             'id': '1',
             'name': 'Studio 1',
-            'num_rows': 5,
-            'num_cols': 6
+            'num_rows': 10,
+            'num_cols': 12
         },
         {
             'id': '2',
             'name': 'Studio 2',
-            'num_rows': 6,
-            'num_cols': 6
+            'num_rows': 10,
+            'num_cols': 12
         },
         {
             'id': '3',
             'name': 'Studio 3',
-            'num_rows': 6,
-            'num_cols': 7
+            'num_rows': 10,
+            'num_cols': 12
         }
     ]
 
     data_fnb = [
         {
             'id': '1',
-            'name': 'Popcorn',
+            'name': 'Cocacola',
             'price': 20000,
             'poster': 'Poster',
-            'detail_info': 'Detail info popcorn',
+            'detail_info': 'Detail info cocacola',
             'available_stock': 20,
         },
         {
