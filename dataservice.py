@@ -25,10 +25,24 @@ def get_fnbs():
     data = DataDatabase.data_fnb
     return data
 
-@app.route('/schedule', methods=['GET'])
-def get_schedule():
+@app.route('/fnb/<id>', methods=['GET'])
+def get_fnb(id):
+    data = [s for s in DataDatabase.data_fnb if s["id"] == id]
+    if data:
+        return data[0]
+    return jsonify({"msg":"FnB not found"}), 404
+
+@app.route('/schedules', methods=['GET'])
+def get_schedules():
     data = ScheduleDatabase.data_schedule
     return data
+
+@app.route('/schedule/<id>', methods=['GET'])
+def get_schedule(id):
+    data = [s for s in ScheduleDatabase.data_schedule if s["id"] == id]
+    if data:
+        return data[0]
+    return jsonify({"msg":"Schedule not found"}), 404
 
 @app.route('/show-seats', methods=['GET'])
 def show_seats():
@@ -85,4 +99,4 @@ def ticket_cancel():
 
 if __name__ == '__main__':
     # run app in debug mode on port 5000
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5003)
