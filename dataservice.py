@@ -3,6 +3,8 @@ from dbdata import DataDatabase, ScheduleDatabase
 import string
 from localStoragePy import localStoragePy
 import json as JSON
+from dataclass import Schedule
+from datetime import date, timedelta
 
 app = Flask(__name__)
 localStorage = localStoragePy('IF5121-dataservice', 'json')
@@ -56,22 +58,30 @@ def show_seats():
 
 @app.route('/take-seats', methods=['POST'])
 def take_seats():
+    tickets = []
     args = request.args
-    schedule_id = args['schedule-id']
-    date = args['date']
+    schedule_id = args['schedule_id']
+    dates = args['date']
     seats = request.json['seats']
-    ticket = {
-        'schedule_id': schedule_id,
-        'date': date,
-        'seats': seats
-    }
-    return ticket
+    for data in  ScheduleDatabase.data_schedule:
+        if data['id'] == schedule_id:
+            schedule = Schedule(data['id'],data['film'],data['studio'], data['time'],data['date_start'],data['date_end'])
+            break
+    conv = convert_seat_to_index(seats)
+    for seat in conv :
+        tickets.append(schedule.take_seat(date(dates), seat[0], seat[1]))
+    return tickets
     
 
 @app.route('/fnb/book', methods=['POST'])
 def fnb_book():
     fnbs = request.json['fnbs']
-    localStorage.setItem('FNBS', JSON.dumps(fnbs))
+    li = []
+    for item in fnbs:
+        for data in DataDatabase.data_fnb:
+            if item == data['name']:
+                li.append(data)
+    localStorage.setItem('FNBS', JSON.dumps(li))
     return localStorage.getItem('FNBS')
 
 @app.route('/ticket/book', methods=['POST'])
