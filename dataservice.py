@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
-from dbdata import DataDatabase
-from dbschedule import ScheduleDatabase
+from dbdata import DataDatabase, ScheduleDatabase
 import string
 from localStoragePy import localStoragePy
 import json as JSON
@@ -34,7 +33,7 @@ def get_schedule():
 @app.route('/show-seats', methods=['GET'])
 def show_seats():
     args = request.args
-    schedule_id = args['schedule-id']
+    schedule_id = args['schedule_id']
     date = args['date']
     data_schedule = ScheduleDatabase.data_schedule
     for data in data_schedule:
