@@ -2,8 +2,14 @@ from flask import Flask, request, jsonify
 from dbdata import DataDatabase
 from dbschedule import ScheduleDatabase
 import string
+from localStoragePy import localStoragePy
+import json as JSON
 
 app = Flask(__name__)
+localStorage = localStoragePy('IF5121-dataservice', 'json')
+localStorage.setItem('FNBS', JSON.dumps([]))
+localStorage.setItem('TICKET', JSON.dumps([]))
+
 
 def convert_seat_to_index(chosen_seats):
     row_dict = {letter: index for index, letter in enumerate(string.ascii_uppercase)}
@@ -35,36 +41,48 @@ def show_seats():
         if data['id']==schedule_id:
             return data['mat_seat'][date]
 
-@app.route('take-seats/', methods=['POST'])
+@app.route('/take-seats', methods=['POST'])
 def take_seats():
     args = request.args
     schedule_id = args['schedule-id']
     date = args['date']
     seats = request.json['seats']
-    # ticket = 
+    ticket = {
+        'schedule_id': schedule_id,
+        'date': date,
+        'seats': seats
+    }
+    return ticket
     
 
 @app.route('/fnb/book', methods=['POST'])
 def fnb_book():
-    fnbs = request.json(['fnbs'])
-    with open("test.txt", "w") as fo:
-        fo.write("This is Test Data")
+    fnbs = request.json['fnbs']
+    localStorage.setItem('FNBS', JSON.dumps(fnbs))
+    return localStorage.getItem('FNBS')
 
 @app.route('/ticket/book', methods=['POST'])
 def ticket_book():
-    schedule_id = request.json(['schedule_id'])
-    date = request.json(['date'])
-    seats = request.json(['seats'])
+    schedule_id = request.json['schedule_id']
+    date = request.json['date']
+    seats = request.json['seats']
+    ticket = {
+        'schedule_id': schedule_id,
+        'date': date,
+        'seats': seats
+    }
+    localStorage.setItem('TICKET', ticket)
+    return localStorage.getItem('TICKET')
 
 @app.route('/fnb/cancel', methods=['POST'])
 def fnb_cancel():
-    fnbs = request.json(['fnbs'])
+    localStorage.setItem('FNBS', JSON.dumps([]))
+    return localStorage.getItem('FNBS')
 
 @app.route('/ticket/cancel', methods=['POST'])
 def ticket_cancel():
-    schedule_id = request.json(['schedule_id'])
-    date = request.json(['date'])
-    seats = request.json(['seats'])
+    localStorage.setItem('TICKET', JSON.dumps([]))
+    return localStorage.getItem('TICKET')
 
 if __name__ == '__main__':
     # run app in debug mode on port 5000
