@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from dbdata import DataDatabase, ScheduleDatabase
 import string
 from localStoragePy import localStoragePy
@@ -65,42 +65,48 @@ def take_seats(schedule_id, schedule_date):
     conv = convert_seat_to_index(seats)
     for seat in conv :
         tickets.append(schedule.take_seat(schedule_date, seat[0], seat[1]))
+    DataDatabase.data_ticket += tickets
     return serialize(tickets)
     
 
 @app.route('/fnb/book', methods=['POST'])
 def fnb_book():
-    fnbs = request.json['fnbs']
-    li = []
-    for item in fnbs:
-        for data in DataDatabase.data_fnb:
-            if item == data['name']:
-                li.append(data)
-    localStorage.setItem('FNBS', JSON.dumps(li))
-    return localStorage.getItem('FNBS')
-
-@app.route('/ticket/book', methods=['POST'])
-def ticket_book():
-    schedule_id = request.json['schedule_id']
-    date = request.json['date']
-    seats = request.json['seats']
-    ticket = {
-        'schedule_id': schedule_id,
-        'date': date,
-        'seats': seats
-    }
-    localStorage.setItem('TICKET', ticket)
-    return localStorage.getItem('TICKET')
+    names = request.json['fnbs']
+    fnbs = [f for f in DataDatabase.data_fnb if f.name in names]
+    for f in fnbs:
+        f.book()
+    return Response(status=204)
 
 @app.route('/fnb/cancel', methods=['POST'])
 def fnb_cancel():
-    localStorage.setItem('FNBS', JSON.dumps([]))
-    return localStorage.getItem('FNBS')
+    names = request.json['fnbs']
+    fnbs = [f for f in DataDatabase.data_fnb if f.name in names]
+    for f in fnbs:
+        f.cancel()
+    
+    return Response(status=204)
 
-@app.route('/ticket/cancel', methods=['POST'])
-def ticket_cancel():
-    localStorage.setItem('TICKET', JSON.dumps([]))
-    return localStorage.getItem('TICKET')
+@app.route('/ticket/book/<schedule_id>/<schedule_date>', methods=['POST'])
+def ticket_book(schedule_id, schedule_date):
+    tickets = []
+    seats = request.json['seats']
+    seat_index = convert_seat_to_index(seats)
+    for t in DataDatabase.data_ticket:
+        for s in seat_index:
+            if t.get_schedule().id == schedule_id and t.date == schedule_date and t.seat_row == s[0] and t.seat_col == s[1]:
+                t.book()
+    return Response(status=204)
+    
+@app.route('/ticket/cancel/<schedule_id>/<schedule_date>', methods=['POST'])
+def ticket_cancel(schedule_id, schedule_date):
+    tickets = []
+    seats = request.json['seats']
+    seat_index = convert_seat_to_index(seats)
+    for t in DataDatabase.data_ticket:
+        for s in seat_index:
+            if t.get_schedule().id == schedule_id and t.date == schedule_date and t.seat_row == s[0] and t.seat_col == s[1]:
+                t.cancel()
+    return Response(status=204)
 
 if __name__ == '__main__':
     # run app in debug mode on port 5000

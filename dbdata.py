@@ -55,6 +55,8 @@ class DataDatabase():
         )
     ]
 
+    data_ticket = []
+
 class ScheduleDatabase():
     data_schedule = [
         Schedule(

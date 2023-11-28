@@ -1,6 +1,47 @@
 from datetime import date, timedelta
 import string
 
+class Account:
+
+    def __init__(self) -> None:
+        self._email = None 
+        self._password = None
+        self._database = None
+    
+    @property
+    def database(self):
+        return self._database
+    
+    @database.setter
+    def database(self, selection_database):
+        self._database = selection_database
+    
+    @property
+    def email(self):
+        return self._email
+
+    @email.setter
+    def email(self, user_email):
+        self._email = user_email
+
+    @property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, user_password):
+        self._password = user_password
+      
+    def login(self):
+        pass
+
+    def reset_password(self):
+        pass
+
+class User(Account):
+
+    def __init__(self)-> None:
+        super().__init__()
 class Studio(object):
     def __init__(self, name, num_rows, num_cols):
         self.name = name
@@ -242,7 +283,8 @@ class Schedule(object):
             film=self.film.serialize(),
             studio=self.studio.serialize(),
             time=self.time,
-            date_start=self.date_start,
-            date_end=self.date_end,
+            date_start=self.date_start.strftime('%Y-%m-%d'),
+            date_end=self.date_end.strftime('%Y-%m-%d'),
             mat_seat=self.mat_seat,
         )
+
