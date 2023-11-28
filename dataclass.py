@@ -196,7 +196,7 @@ class Ticket(Item):
 
     def serialize(self):
         s = self.schedule.serialize()
-        del s["mat_seat"]
+        # del s["mat_seat"]
         return dict(
             schedule=s,
             date=self.date,
@@ -285,6 +285,6 @@ class Schedule(object):
             time=self.time,
             date_start=self.date_start.strftime('%Y-%m-%d'),
             date_end=self.date_end.strftime('%Y-%m-%d'),
-            mat_seat=self.mat_seat,
+            # mat_seat=self.mat_seat,
         )
 
