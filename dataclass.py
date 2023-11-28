@@ -1,8 +1,6 @@
 from datetime import date, timedelta
 import string
 
-
-
 class Studio(object):
     def __init__(self, name, num_rows, num_cols):
         self.name = name
@@ -20,6 +18,14 @@ class Studio(object):
         self.name = num_rows
     def set_num_cols(self, num_cols):
         self.name = num_cols
+
+    def serialize(self):
+        return dict(
+            name=self.name,
+            num_rows=self.num_rows,
+            num_cols=self.num_cols
+        )
+    # return result
 
 class Item(object):
     def __init__(self, name, price):
@@ -59,6 +65,16 @@ class Film(Item):
         self.duration = duration
     def set_poster(self, poster):
         self.poster = poster
+    
+    def serialize(self):
+        return dict(
+            name=self.name,
+            price=self.price,
+            synopsis=self.synopsis,
+            genre=self.genre,
+            duration=self.duration,
+            poster=self.poster
+        )
 
 class FnB(Item):
     def __init__(self, name, price, poster, detail_info, available_stock, is_available=True):
@@ -89,6 +105,16 @@ class FnB(Item):
         if (self.get_available_stock()-1) < 0:
             raise Exception(f"Stock {self.get_name} sudah habis")
         self.set_stock(self.get_available_stock()-1)
+    
+    def serialize(self):
+        return dict(
+            name=self.name,
+            price=self.price,
+            poster=self.poster,
+            detail_info=self.detail_info,
+            available_stock=self.available_stock,
+            is_available=self.is_available
+        )
 
 class Ticket(Item):
     def __init__(self, schedule, date, seat_row, seat_col):
@@ -126,21 +152,34 @@ class Ticket(Item):
         seat_number = f"{row_letter}{col_index+1}"
 
         return seat_number
+
+    def serialize(self):
+        s = self.schedule.serialize()
+        del s["mat_seat"]
+        return dict(
+            schedule=s,
+            date=self.date,
+            seat_row=self.seat_row,
+            seat_col=self.seat_col
+        )
+    
     
 class Schedule(object):
-    def __init__(self, id: str, film: Film, studio: Studio, time: str, date_start: date, date_end: date):
+    def __init__(self,
+    id: str, film: Film, studio: Studio, time: str, date_start: date, date_end: date, mat_seat={}):
         self.id = id
         self.film = film
         self.studio = studio
         self.time = time
         self.date_start = date_start
         self.date_end = date_end
-        self.mat_seat = {}
+        self.mat_seat = mat_seat
 
-        delta = timedelta(days=1)
-        while date_start <= date_end:
-            self.mat_seat[date_start.strftime("%Y-%m-%d")] = [[True for x in range (self.studio.num_cols)] for y in range (self.studio.num_rows)]
-            date_start += delta
+        if not mat_seat:
+            delta = timedelta(days=1)
+            while date_start <= date_end:
+                self.mat_seat[date_start.strftime("%Y-%m-%d")] = [[True for x in range (self.studio.num_cols)] for y in range (self.studio.num_rows)]
+                date_start += delta
 
     def __str__(self) -> str:
         return f'{self.film.__str__()}'
@@ -196,3 +235,14 @@ class Schedule(object):
                 print()
         except KeyError as e :
             raise KeyError(e)
+
+    def serialize(self):
+        return dict(
+            id=self.id,
+            film=self.film.serialize(),
+            studio=self.studio.serialize(),
+            time=self.time,
+            date_start=self.date_start,
+            date_end=self.date_end,
+            mat_seat=self.mat_seat,
+        )

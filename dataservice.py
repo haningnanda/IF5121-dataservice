@@ -4,7 +4,8 @@ import string
 from localStoragePy import localStoragePy
 import json as JSON
 from dataclass import Schedule
-from datetime import date, timedelta
+from datetime import timedelta
+from helper import serialize
 
 app = Flask(__name__)
 localStorage = localStoragePy('IF5121-dataservice', 'json')
@@ -24,53 +25,47 @@ def convert_seat_to_index(chosen_seats):
 
 @app.route('/fnbs', methods=['GET'])
 def get_fnbs():
-    data = DataDatabase.data_fnb
-    return data
+    return serialize(DataDatabase.data_fnb)
+    
 
-@app.route('/fnb/<id>', methods=['GET'])
-def get_fnb(id):
-    data = [s for s in DataDatabase.data_fnb if s["id"] == id]
+@app.route('/fnb/<name>', methods=['GET'])
+def get_fnb(name):
+    data = [s for s in DataDatabase.data_fnb if s.name == name]
     if data:
-        return data[0]
+        return serialize(data[0])
     return jsonify({"msg":"FnB not found"}), 404
 
 @app.route('/schedules', methods=['GET'])
 def get_schedules():
-    data = ScheduleDatabase.data_schedule
+    data = serialize(ScheduleDatabase.data_schedule)
     return data
 
 @app.route('/schedule/<id>', methods=['GET'])
 def get_schedule(id):
-    data = [s for s in ScheduleDatabase.data_schedule if s["id"] == id]
+    data = [s for s in ScheduleDatabase.data_schedule if s.id == id]
     if data:
-        return data[0]
+        return serialize(data[0])
     return jsonify({"msg":"Schedule not found"}), 404
 
-@app.route('/show-seats', methods=['GET'])
-def show_seats():
-    args = request.args
-    schedule_id = args['schedule_id']
-    date = args['date']
-    data_schedule = ScheduleDatabase.data_schedule
-    for data in data_schedule:
-        if data['id']==schedule_id:
-            return data['mat_seat'][date]
+@app.route('/show-seats/<schedule_id>/<schedule_date>', methods=['GET'])
+def show_seats(schedule_id, schedule_date):
+    data = [s for s in ScheduleDatabase.data_schedule if s.id == schedule_id]
+    return data[0].mat_seat[schedule_date]
 
-@app.route('/take-seats', methods=['POST'])
-def take_seats():
+@app.route('/take-seats/<schedule_id>/<schedule_date>', methods=['POST'])
+def take_seats(schedule_id, schedule_date):
     tickets = []
-    args = request.args
-    schedule_id = args['schedule_id']
-    dates = args['date']
     seats = request.json['seats']
-    for data in  ScheduleDatabase.data_schedule:
-        if data['id'] == schedule_id:
-            schedule = Schedule(data['id'],data['film'],data['studio'], data['time'],data['date_start'],data['date_end'])
-            break
+    data = [s for s in ScheduleDatabase.data_schedule if s.id == schedule_id]
+
+    if not data:
+        return jsonify({"msg":"Schedule not found"}), 404
+    
+    schedule = data[0]
     conv = convert_seat_to_index(seats)
     for seat in conv :
-        tickets.append(schedule.take_seat(date(dates), seat[0], seat[1]))
-    return tickets
+        tickets.append(schedule.take_seat(schedule_date, seat[0], seat[1]))
+    return serialize(tickets)
     
 
 @app.route('/fnb/book', methods=['POST'])
